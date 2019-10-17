@@ -70,15 +70,15 @@ Uporabljen je REST z GET metodo na istem URL-ju kot dodajanje uporabnika
 in dobimo seznam uporabnikov v json obliki:
 
 	{"Uporabniki":[
-    {"ID":"fa906169-e296-4a4d-aaa2-72a63e37278d","Ime":"Janko","Priimek":"Bezjak"},
-    {"ID":"88144d9b-9db4-4d6a-89f7-713d27e2a2a2","Ime":"Miha","Priimek":"Novak"},
-    {"ID":"f95260c9-921e-46bd-80c6-3ded23437db0","Ime":"Anica","Priimek":"Veber"},
-    {"ID":"91495f17-99c4-4c98-7342-d76e7d95dbf5","Ime":"Monika","Priimek":"Žagar"}
+    	{"ID":"fa906169-e296-4a4d-aaa2-72a63e37278d","Ime":"Janko","Priimek":"Bezjak"},
+    	{"ID":"88144d9b-9db4-4d6a-89f7-713d27e2a2a2","Ime":"Miha","Priimek":"Novak"},
+   	 	{"ID":"f95260c9-921e-46bd-80c6-3ded23437db0","Ime":"Anica","Priimek":"Veber"},
+    	{"ID":"91495f17-99c4-4c98-7342-d76e7d95dbf5","Ime":"Monika","Priimek":"Žagar"}
     ]}
     
 #### Izposoja knjige
 
-Uporabljen je RPC s POST metodo in vhodno json datoteko. Za izposojo uporabimom polje "Izposodi" :true
+Uporabljen je RPC s POST metodo in vhodno json datoteko. Za izposojo uporabimo polje "Izposodi" :true
 
 	curl -d '{  "UporabnikID":"88144d9b-9db4-4d6a-89f7-713d27e2a2a2", "IzvodID":"3cf1d23e-faeb-4dd9-ba08-e69b6b395269", "Izposodi" :true}' -H "Content-pe: application/json" -X POST  http://localhost:8000/rpc/izposoja
 
@@ -89,6 +89,18 @@ Podobno kot izposoja knjige, le da uporabimo polje  "Vrni" :true
 	curl -d '{  "UporabnikID":"88144d9b-9db4-4d6a-89f7-713d27e2a2a2", "IzvodID":"3cf1d23e-faeb-4dd9-ba08-e69b6b395269", "Vrni":true}' -H "Content-pe: application/json" -X POST  http://localhost:8000/rpc/izposoja
 
 #### Seznam knjig s številom prostih izvodov
+
+Uporabljen je REST z GET metodo.
+
+	curl  -X GET http://localhost:8000/rest/knjiga
+
+in dobimo rezultat v json obliki:
+
+	{"KnjigeCount":[
+    	{"Naziv":"Pod snegom","Prostih":3},
+    	{"Naziv":"Metulj","Prostih":1},
+    	{"Naziv":"Vojna in mir","Prostih":1}
+    ]}
 
 
 
