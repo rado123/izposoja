@@ -1,0 +1,9 @@
+#!/bin/bash
+#
+
+
+export DBHOST=localhost
+export DBPORT=5432
+export DBUSER=user
+export DBPASS=geslo
+export DBNAME=izposoja
