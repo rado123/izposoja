@@ -4,6 +4,8 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	//"io"
+	"io/ioutil"
 	"net/http"
 )
 
@@ -18,36 +20,69 @@ type uporabniki struct {
 	Uporabniki []uporabnikSummary
 }
 
-func dodajUporabnikaHandler(db *sql.DB) http.Handler {
+func restUporabnik(db *sql.DB) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintf(w, string("dodaj uporanika to do"))
-		fmt.Println("request:", r)
-		fmt.Println("r.Body:", r.Body)
-
+		switch m := r.Method; m {
+		case http.MethodPost:
+			{
+				dodajUporabnika(db, w, r)
+			}
+		case http.MethodGet:
+			{
+				prikaziUporabnike(db, w, r)
+			}
+		default:
+			{
+				e := "Metoda" + m + " ni implementirana"
+				http.Error(w, e, http.StatusMethodNotAllowed)
+			}
+		}
+		return
 	})
 }
 
-func prikaziUporabnikeHandler(db *sql.DB) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		ulist := uporabniki{} // init
+func dodajUporabnika(db *sql.DB, w http.ResponseWriter, r *http.Request) {
+	fmt.Fprintf(w, string("metoda JE POST"))
+	fmt.Fprintf(w, string("dodaj uporanika to do"))
+	fmt.Println("request:", r)
+	fmt.Println("request.Method:", r.Method)
 
-		err := queryUporabniki(db, &ulist)
-		if err != nil {
-			http.Error(w, err.Error(), 500)
-			return
-		}
+	body, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+		return
+	}
+	fmt.Println("body=", string(body))
 
-		// pretvorim v json obliko
-		out, err := json.Marshal(ulist)
-		if err != nil {
-			http.Error(w, err.Error(), 500)
-			return
-		}
+	var t uporabnikSummary
+	err = json.Unmarshal(body, &t)
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+		return
+	}
+	fmt.Println("t.,ime=", t.Ime)
+	fmt.Println("t=", t)
+}
 
-		// rezultat vrne klientu
-		fmt.Fprintf(w, string(out))
+func prikaziUporabnike(db *sql.DB, w http.ResponseWriter, r *http.Request) {
+	ulist := uporabniki{} // init
 
-	})
+	err := queryUporabniki(db, &ulist)
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+		return
+	}
+
+	// pretvorim v json obliko
+	out, err := json.Marshal(ulist)
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+		return
+	}
+
+	// rezultat vrne klientu
+	fmt.Fprintf(w, string(out))
+
 }
 
 // fetcha uporabnike iz db
