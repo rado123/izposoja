@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
-	//"io"
 	"io/ioutil"
 	"net/http"
 )
@@ -46,24 +45,19 @@ func dodajUporabnika(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 	fmt.Println("request.Method:", r.Method)
 
 	// preberem json body v u
-	var u uporabnikSummary
+	var u, uout uporabnikSummary
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	fmt.Println("body=", string(body))
-	fmt.Println("...1")
 
 	err = json.Unmarshal(body, &u)
-	fmt.Println("...2")
 	if err != nil {
-		fmt.Println("...2.5")
-
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	fmt.Println("...3")
 	fmt.Println("u.ime=", u.Ime)
 	fmt.Println("u=", u)
 	//generiram guid
@@ -84,6 +78,29 @@ func dodajUporabnika(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 	}
 
 	//preberem iz baze
+	row := db.QueryRow(`
+		SELECT
+			ID,
+			Ime,
+			Priimek
+		FROM uporabnik
+		WHERE ID=$1`, u.ID)
+	fmt.Println("row:", row)
+	row.Scan(
+		&uout.ID,
+		&uout.Ime,
+		&uout.Priimek,
+	)
+
+	// pretvorim v json
+	out, err := json.Marshal(&uout)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// rezultat vrne klientu
+	fmt.Fprintf(w, string(out))
 
 }
 
