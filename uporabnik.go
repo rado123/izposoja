@@ -19,6 +19,7 @@ type uporabniki struct {
 	Uporabniki []uporabnikSummary
 }
 
+// handlanje rest klica
 func restUporabnik(db *sql.DB) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch m := r.Method; m {

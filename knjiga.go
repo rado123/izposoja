@@ -17,6 +17,16 @@ type knjige struct {
 	Knjige []knjigaSummary
 }
 
+// za drug View
+type knjigaCountSummary struct {
+	Naziv            string
+	CountIzposojenih int
+}
+
+type knjigeCount struct {
+	KnjigeCount []knjigaCountSummary
+}
+
 func restKnjiga(db *sql.DB) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch m := r.Method; m {
@@ -35,8 +45,8 @@ func restKnjiga(db *sql.DB) http.Handler {
 }
 
 func prikaziKnjige(db *sql.DB, w http.ResponseWriter, r *http.Request) {
-	klist := knjige{} // init
-	err := queryKnjige(db, &klist)
+	klist := knjigeCount{} // init
+	err := queryKnjigeCount(db, &klist)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -55,27 +65,27 @@ func prikaziKnjige(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 }
 
 // fetcha knjige iz db
-func queryKnjige(db *sql.DB, klist *knjige) error {
+func queryKnjigeCount(db *sql.DB, klist *knjigeCount) error {
 	rows, err := db.Query(`
-		SELECT
-			ID,
-			Naziv
-		FROM knjiga
-		ORDER BY Naziv`)
+		SELECT  k.naziv
+  			,count(i.uporabnik_id)
+       		FROM izvod i
+		LEFT JOIN knjiga k  ON i.knjiga_id = k.id
+		GROUP BY k.id`)
 	if err != nil {
 		return err
 	}
 	defer rows.Close()
 	for rows.Next() {
-		knjiga := knjigaSummary{}
+		knjiga := knjigaCountSummary{}
 		err = rows.Scan(
-			&knjiga.ID,
 			&knjiga.Naziv,
+			&knjiga.CountIzposojenih,
 		)
 		if err != nil {
 			return err
 		}
-		klist.Knjige = append(klist.Knjige, knjiga)
+		klist.KnjigeCount = append(klist.KnjigeCount, knjiga)
 	}
 	err = rows.Err()
 	if err != nil {
