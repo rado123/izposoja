@@ -19,8 +19,8 @@ type knjige struct {
 
 // za drug View
 type knjigaCountSummary struct {
-	Naziv            string
-	CountIzposojenih int
+	Naziv   string
+	Prostih int
 }
 
 type knjigeCount struct {
@@ -66,12 +66,11 @@ func prikaziKnjige(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 
 // fetcha knjige iz db
 func queryKnjigeCount(db *sql.DB, klist *knjigeCount) error {
-	rows, err := db.Query(`
-		SELECT  k.naziv
-  			,count(i.uporabnik_id)
-       		FROM izvod i
-		LEFT JOIN knjiga k  ON i.knjiga_id = k.id
-		GROUP BY k.id`)
+	rows, err := db.Query(`SELECT  k.naziv,count(i.id)
+        			FROM izvod i
+				JOIN knjiga k  ON i.knjiga_id = k.id	
+				WHERE i.uporabnik_id IS NULL
+				GROUP BY k.id`)
 	if err != nil {
 		return err
 	}
@@ -80,7 +79,7 @@ func queryKnjigeCount(db *sql.DB, klist *knjigeCount) error {
 		knjiga := knjigaCountSummary{}
 		err = rows.Scan(
 			&knjiga.Naziv,
-			&knjiga.CountIzposojenih,
+			&knjiga.Prostih,
 		)
 		if err != nil {
 			return err
