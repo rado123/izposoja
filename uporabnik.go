@@ -41,8 +41,6 @@ func restUporabnik(db *sql.DB) http.Handler {
 }
 
 func dodajUporabnika(db *sql.DB, w http.ResponseWriter, r *http.Request) {
-	fmt.Println("request:", r)
-	fmt.Println("request.Method:", r.Method)
 
 	// preberem json body v u
 	var u, uout uporabnikSummary
@@ -51,22 +49,19 @@ func dodajUporabnika(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	fmt.Println("body=", string(body))
 
 	err = json.Unmarshal(body, &u)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	fmt.Println("u.ime=", u.Ime)
-	fmt.Println("u=", u)
+
 	//generiram guid
 	id, err := generateGuid()
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	fmt.Println("uuid=", stringGuid(id))
 	u.ID = stringGuid(id)
 
 	// zapišem u v bazo
@@ -85,7 +80,6 @@ func dodajUporabnika(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 			Priimek
 		FROM uporabnik
 		WHERE ID=$1`, u.ID)
-	fmt.Println("row:", row)
 	row.Scan(
 		&uout.ID,
 		&uout.Ime,
@@ -116,7 +110,7 @@ func prikaziUporabnike(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 	// pretvorim v json obliko
 	out, err := json.Marshal(ulist)
 	if err != nil {
-		http.Error(w, err.Error(), 500)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
@@ -127,7 +121,6 @@ func prikaziUporabnike(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 
 // fetcha uporabnike iz db
 func queryUporabniki(db *sql.DB, ulist *uporabniki) error {
-
 	rows, err := db.Query(`
 		SELECT
 			ID,
