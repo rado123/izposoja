@@ -26,9 +26,7 @@ func main() {
 	defer db.Close()
 
 	http.Handle("/rest/uporabnik", restUporabnik(db))
-	http.Handle("/rest/ulist", prikaziUporabnikeHandler(db))
-	// http.Handle("/rest/upost", dodajUporabnikaHandler(db))
-	http.Handle("/rest/klist", prikaziKnjigeHandler(db))
+	// http.Handle("/rest/knjiga", restKnjiga(db))
 	http.Handle("/rpc/izposoja", izposojaKnjigeHandler(db))
 	http.Handle("/rpc/vracanje", vracanjeKnjigeHandler(db))
 	log.Fatal(http.ListenAndServe("localhost:8000", nil))

@@ -11,7 +11,7 @@ import (
 
 // Imena polj se začnejo z Veliko črko zaradi json pretvorbe
 type uporabnikSummary struct {
-	ID      int
+	ID      string
 	Ime     string
 	Priimek string
 }
@@ -42,34 +42,57 @@ func restUporabnik(db *sql.DB) http.Handler {
 }
 
 func dodajUporabnika(db *sql.DB, w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, string("metoda JE POST"))
-	fmt.Fprintf(w, string("dodaj uporanika to do"))
 	fmt.Println("request:", r)
 	fmt.Println("request.Method:", r.Method)
 
+	// preberem json body v u
+	var u uporabnikSummary
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
-		http.Error(w, err.Error(), 500)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	fmt.Println("body=", string(body))
+	fmt.Println("...1")
 
-	var t uporabnikSummary
-	err = json.Unmarshal(body, &t)
+	err = json.Unmarshal(body, &u)
+	fmt.Println("...2")
 	if err != nil {
-		http.Error(w, err.Error(), 500)
+		fmt.Println("...2.5")
+
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	fmt.Println("t.,ime=", t.Ime)
-	fmt.Println("t=", t)
+	fmt.Println("...3")
+	fmt.Println("u.ime=", u.Ime)
+	fmt.Println("u=", u)
+	//generiram guid
+	id, err := generateGuid()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	fmt.Println("uuid=", stringGuid(id))
+	u.ID = stringGuid(id)
+
+	// zapišem u v bazo
+	ukaz := "INSERT INTO uporabnik (ID,Ime,Priimek) VALUES ($1, $2, $3);"
+	_, err = db.Exec(ukaz, u.ID, u.Ime, u.Priimek)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	//preberem iz baze
+
 }
 
 func prikaziUporabnike(db *sql.DB, w http.ResponseWriter, r *http.Request) {
-	ulist := uporabniki{} // init
+	ulist := uporabniki{} // init84
 
 	err := queryUporabniki(db, &ulist)
 	if err != nil {
-		http.Error(w, err.Error(), 500)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
