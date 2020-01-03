@@ -34,7 +34,7 @@ Po potrebi se koda prevede z
 
 zažene pa s
 
-`source config/pgConn.sh; izposoja
+`source config/pgConn.sh; izposoja`
 
 ### Primeri uporabe 
 
